@@ -1,10 +1,12 @@
 package com.example.mvvmnoteapp.feature_note.presentation
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable

@@ -3,9 +3,12 @@ package com.example.mvvmnoteapp.feature_note.presentation.add_edit_note
 import android.annotation.SuppressLint
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,9 +18,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -27,11 +35,15 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
@@ -42,6 +54,7 @@ import com.example.mvvmnoteapp.feature_note.presentation.add_edit_note.component
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun AddEditNoteScreen(
@@ -87,7 +100,7 @@ fun AddEditNoteScreen(
                 Icon(imageVector = Icons.Default.Save, contentDescription = "Save note")
             }
         },
-        scaffoldState = scaffoldState
+        scaffoldState = scaffoldState,
     ) {
         Column(
             modifier = Modifier
@@ -95,6 +108,11 @@ fun AddEditNoteScreen(
                 .background(noteBackgroundAnimatable.value)
                 .padding(16.dp)
         ) {
+            val bringIntoViewRequester = remember {
+                BringIntoViewRequester()
+            }
+            val coroutineScope = rememberCoroutineScope()
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,7 +176,17 @@ fun AddEditNoteScreen(
                 },
                 isHintVisible = contentState.isHintVisible,
                 textStyle = MaterialTheme.typography.body1,
-                modifier = Modifier.fillMaxHeight()
+                modifier = Modifier
+                    // automatically scroll TextField when type enter key
+                    // to avoid keyboard hide current entering words.
+                    .bringIntoViewRequester(bringIntoViewRequester)
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                            coroutineScope.launch {
+                                bringIntoViewRequester.bringIntoView()
+                            }
+                        }
+                    }
             )
         }
     }
